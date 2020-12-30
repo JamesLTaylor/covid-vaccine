@@ -1,0 +1,66 @@
+
+
+agents move - simulates coming in contact with different people
+there is a prob of infecting another person if distance is less than R_c
+
+agent states
+  S: susceptible
+  I: infected severe
+  F: free - infected mild/none
+  E: exposed - infected not yet known
+  V: dead
+  vaccinated
+  R: recovered
+
+different agents have different risk of death
+agents exist in regions of different density
+Some move further which simulates more connected people
+Agents should be mean reverting
+
+
+Different initial clustering? How to do that?
+  Maybe simulate K means then simulate data around the means
+
+
+Known
+  Age distribution
+  death profile per age
+  Target R0 of 2.5 is susceptible population
+  proportion with no symptoms
+  time from infection to symptoms
+
+
+
+Calibration
+  Number of clusters
+  variation in cluster
+  R_c to create infection
+  distribution of social speed
+  mean reversion
+
+
+SA Target
+  known initial growth rate and saturation time
+  time of second wave
+
+
+Simulation
+  Place agents
+  Give agents a speed and an age
+  start moving and infecting
+
+  Check number infected and deaths at each epoch
+  plot points
+
+Speed: Mioght be better to break the space into cells rather than Rc. Then we do not need to check all pairs
+just see if anyone else is in the same cell.
+
+
+*Notes on Paper*
+
+We don't have the same city size distribution as Germany
+The death rate seems constant
+
+
+
+

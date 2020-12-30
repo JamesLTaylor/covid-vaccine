@@ -1,0 +1,14 @@
+population 60m
+
+0.1%                      2020-05-01 (6k)
+1%  confirmed infected by 2020-06-11 (60k) 40days
+10%                       2020-08-20 (600k) 110 days
+20%     +-
+
+initial_infection = 0.004
+speed = 0.01  # per day
+_r_c = 0.1  # social distance at which person gets infected. Need such that average R is 2.5
+beta_r = 0.04
+
+1%  30 days
+10% 88 days
