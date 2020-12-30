@@ -48,13 +48,13 @@ Click on the following image to watch a youtube video of an example simulation:
 
 This simulation runs for 250 days and produces the following population dynamics: 
 
-![daily infections](images/v1 daily infections.png "daily infections")
+![daily infections](images/v1_daily_infections.png "daily infections")
 
 Black dots represent deaths and the ages of the simulated agents that died. 
 
-![total infections](images/v1 total infections.png "total infections")
+![total infections](images/v1_total_infections.png "total infections")
 
-![realized r0](images/v1 realized r0.png "realized r0")
+![realized r0](images/v1_realized_r0.png "realized r0")
 
 
 ## Issues
