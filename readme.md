@@ -3,20 +3,22 @@
 Inspired by the work [Grauer2020], we attempt to answer the question of how to optimally administer a limited
 supply of covid-19 vaccines in order to minimize deaths.
 
-There are two extra features that we believe could be interesting to add to the Grauer method and investigate.
+There are two extra features that we believe could be interesting to add to the Grauer method:
  
- * Mortality increases with age
- * There could be highly connected individuals like shops workers, taxi drivers, security personal etc.
+ 1. That Mortality increases with age, and
+ 2. That there could be highly connected individuals like shops workers, taxi drivers, security personal etc.
  
 There are several strategies that can be considered for administering the vaccine for example.
  
  1. Give to those most at risk of succumbing to the disease
  2. Give to areas that have the highest infection rate
  3. Give uniformly to the population
- 4. Give to people who come into contact with the most others people
+ 4. Give to people who come into contact with the most other people
 
-
-strategies 1. and 4. require the above proposed modifications to the original model.
+Strategy 1. appears to the the most popular and is being rolled out in several countries but we suspect that 
+4. could lead to lower total deaths.
+ 
+Investigating 1. and 4. require the above proposed modifications to the original model.
 
 ## Method
 
@@ -24,10 +26,12 @@ We model N agents who move through "social distance" space following Brownian mo
 infect susceptible agents in the same patch of space. Agents start uniformly distributed in space and the 
 patches in which infections can take place are squares with size such that the expected number of 
 agents in each square is a constant. The initial agents are simulated with ages based on the 2011 South
- African census 
-as reported on [wikipedia](https://en.wikipedia.org/wiki/Demographics_of_South_Africa#Age_and_sex_distribution).
+ African census. 
 
 ## Results 1
+
+The above (loosely described) model has been implemented in ```simulation.py``` and below is an indication
+of what it produces
 
 Parameters:
 
@@ -68,15 +72,24 @@ The mortality rates are based on the age of the agent and the severity of the in
 
 ### Age based mortality rates
 
+[worldometers: coronavirus age and sex demographics](https://www.worldometers.info/coronavirus/coronavirus-age-sex-demographics/)
 
 ### Age distribution in population
 
+[Wikipedia: Demographics_of_South_Africa - Age and sex distribution](https://en.wikipedia.org/wiki/Demographics_of_South_Africa#Age_and_sex_distribution).
 
 
-## References   
+## TODO:
+
+ * Speed up the simulation
+ * Run ensembles of simulations and see how many need to run before we get stable disease dynamics where the 
+ strategies can be tested.
+ * Add the "fast moving agents" who simulate highly connected people
+ * Add the vaccination policies.
 
 
+## References
 
-[Grauer2020]: Grauer, J., Löwen, H. & Liebchen, B. Strategic spatiotemporal vaccine distribution increases 
-the survival rate in an infectious disease like Covid-19. Sci Rep 10, 21594 (2020). 
+[Grauer2020]: Grauer, J., Löwen, H. & Liebchen, B. *Strategic spatiotemporal vaccine distribution increases 
+the survival rate in an infectious disease like Covid-19*. Sci Rep 10, 21594 (2020). 
 [https://doi.org/10.1038/s41598-020-78447-3]
