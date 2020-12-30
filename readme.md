@@ -46,6 +46,19 @@ Click on the following image to watch a youtube video of an example simulation:
 
 [![Simulation](http://img.youtube.com/vi/7wdFTtFDvIw/0.jpg)](http://www.youtube.com/watch?v=7wdFTtFDvIw)
 
+The dots in the video have the following meaning:
+
+|Colour|Meaning|
+|---|---|
+|Light Gray|Younger agents who can get the disease.|
+|Dark Gray|Older agents who can get the disease.|
+|Pink|Infected but no symptoms yet|
+|Orange|Mild infection|
+|Red|Severe infection (higher mortality|
+|Green|Immune|
+|Black|Dead|  
+
+
 This simulation runs for 250 days and produces the following population dynamics: 
 
 ![daily infections](images/v1_daily_infections.png "daily infections")
