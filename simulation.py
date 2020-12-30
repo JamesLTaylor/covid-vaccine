@@ -3,6 +3,7 @@ from typing import List
 
 import numpy as np
 from matplotlib.animation import FuncAnimation
+import matplotlib
 
 import constants
 from matplotlib import pyplot as plt
@@ -120,7 +121,7 @@ class Agent:
         :param ax:
         :return:
         """
-        lines = plt.plot(self.x, self.y, 'o')
+        lines = plt.plot(self.x, self.y, 'o', ms=3)
         self.dot = lines[0]
         self.dot.set_color(self.color())
 
@@ -182,13 +183,20 @@ def init(N, initial_infection):
 
             age = constants.population_age[row, 0]
             agent = Agent(agent_counter, x, y, age, constants.speed)
-            if np.random.uniform() < initial_infection and x > 0.5 and y > 0.5:
-                agent.infect(0)
-
             agents.append(agent)
             agent_locations[agent_counter][0] = x
             agent_locations[agent_counter][1] = y
             agent_counter += 1
+
+    infected = 0
+    target_infected = 1 + int(initial_infection * N)
+    print(f"Ensuring that the simulation starts with {target_infected} infected agents in the top right quadrant")
+    while infected < target_infected:
+        agent_number = int(N * uniform())
+        agent = agents[agent_number]
+        if agent.state is constants.susceptible and agent.x > 0.5 and agent.y > 0.5:
+            agent.infect(0)
+            infected += 1
 
     return agents, agent_locations, fast_agents
 
@@ -270,7 +278,7 @@ sdt = np.sqrt(dt)
 
 patches = {}
 totals = Totals()
-r_c = constants._r_c / np.sqrt(N/1000)  # r_c is normalized for 1000 agents
+r_c = constants.r_c_1000 / np.sqrt(N/1000)  # r_c is normalized for 1000 agents
 patch_count = int(1 / r_c) + 1
 for i in range(patch_count):
     for j in range(patch_count):
@@ -278,12 +286,12 @@ for i in range(patch_count):
 
 agents, agent_locations, fast_agents = init(N, constants.initial_infection)
 
-days = 100
+days = 250
 include_plot = True
 if include_plot:
     fig, ax = plot(agents)
     animation = FuncAnimation(fig, update, interval=200, save_count=days*10)
-    animation.save('test1.mp4', fps=2, extra_args=['-vcodec', 'libx264'])
+    animation.save('test2.mp4', fps=10, extra_args=['-vcodec', 'libx264'])
     # plt.show()
 else:
     start = time.time()
@@ -293,11 +301,56 @@ else:
 
 
 infections = np.array(totals.infections)
-x = np.arange(days)
-y = np.zeros(days)
+x_vals = np.arange(days)
+daily_infections = np.zeros(days)
+daily_r0 = np.zeros(days)
+r0_data = {}
+for agent in agents:
+    if agent.state is constants.dead or agent.state is constants.immune:
+        day = int(agent.time_in_state + constants.t_d)
+        if day not in r0_data:
+            r0_data[day] = [agent.infected]
+        else:
+            r0_data[day].append(agent.infected)
+
+
 for i in range(days):
-    y[i] = len(np.where((infections >= (i-1)) & (infections < i))[0])
+    daily_infections[i] = len(np.where((infections >= (i-1)) & (infections < i))[0])
+    if i in r0_data:
+        daily_r0[i] = np.mean(r0_data[i])
+    else:
+        daily_r0[i] = 0
 
 avg_window = 10
-y_avg = np.convolve(totals.r0, np.ones(avg_window)/avg_window, mode='valid')
-plt.plot(y_avg)
+daily_infections_avg = np.convolve(daily_infections, np.ones(avg_window)/avg_window, mode='valid')
+
+
+plt.figure()
+plt.plot(x_vals[avg_window-1:], daily_infections_avg)
+for death in totals.deaths:
+    day = int(death[0])
+    y = daily_infections_avg[day-avg_window]
+    plt.plot(day, y, 'ok')
+    plt.text(day+2.5, y-0.1, int(death[1]))
+plt.title("Daily new infections. (10day rolling average)")
+plt.xlabel("days")
+plt.ylabel("new infections")
+
+plt.figure()
+plt.plot(x_vals, 100*np.cumsum(daily_infections)/N)
+plt.gca().yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+plt.title("Total infections.")
+plt.xlabel("days")
+plt.ylabel("% of population infected")
+
+
+plt.figure()
+avg_window = 21
+daily_r0_avg = np.convolve(daily_r0, np.ones(avg_window)/avg_window, mode='valid')
+plt.plot(x_vals[avg_window-1:], daily_r0_avg)
+plt.hlines(1, x_vals[avg_window-1], x_vals[-1], 'k',linestyles='dotted')
+plt.title("Realized $R_0$. 21 day rolling average")
+plt.xlabel("days")
+plt.ylabel("average realized $R_0$")
+
+

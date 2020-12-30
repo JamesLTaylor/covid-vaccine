@@ -11,7 +11,7 @@ death_rate = np.array([[0, 0],
                        [70, 0.08],
                        [80, 0.148]])
 
-# https://en.wikipedia.org/wiki/Demographics_of_South_Africa
+# https://en.wikipedia.org/wiki/Demographics_of_South_Africa#Age_and_sex_distribution
 population_age = np.array([[2, 0.11],
                            [7, 0.093],
                            [12, 0.089],
@@ -31,7 +31,6 @@ population_age = np.array([[2, 0.11],
                            [82, 0.006],
                            [87, 0.005]])
 
-
 susceptible = 0
 exposed = 1
 infected_mild = 2
@@ -48,18 +47,17 @@ states = {susceptible: ["Susceptible", "Gray"],
 t_d = 14  # disease duration = infection to dead/better
 t_l = 5  # infection to symptom
 
-
-proportion_mild = 0.95  #(r) proportion of symptom free infections
-sm = 5  # mortality multiplier: severe / mild
-# require that r * lambda + (1-r) * sm * lambda = total mortality
+proportion_mild = 0.95  # (r from paper) proportion of symptom free infections
+""" sm is mortality multiplier: deaths in severe = sm * deaths in mild. Require 
+that r * lambda + (1-r) * sm * lambda = total mortality """
+sm = 5
 
 dt = 1 / 100
 
-initial_infection = 0.004
+initial_infection = 0.001
 speed = 0.01  # per day
-_r_c = 0.1  # social distance at which person gets infected. Need such that average R is 2.5
+r_c_1000 = 0.1  # social distance at which person gets infected. Need such that average R is 2.5
 beta_r = 0.04
 beta_o = beta_r / 3  # infection rate from mild symptom agents
 
-
-total_mortality_multiplier = 2.0
+total_mortality_multiplier = 2.0  # increase total mortality to be more representative
