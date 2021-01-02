@@ -28,7 +28,9 @@ patches in which infections can take place are squares with size such that the e
 agents in each square is a constant. The initial agents are simulated with ages based on the 2011 South
  African census. 
 
-## Results 1
+## Results 
+
+### Example with video
 
 The above (loosely described) model has been implemented in ```simulation.py``` and below is an indication
 of what it produces
@@ -69,9 +71,27 @@ Black dots represent deaths and the ages of the simulated agents that died.
 
 ![realized r0](images/v1_realized_r0.png "realized r0")
 
+### Multiple Runs
+
+With similar parameters to above but with 6000 agents and run 60 times we get the following results:
+
+![daily infections](images/many_sims_daily_infections.png "daily infections")
+
+![realized r0](images/many_sims_daily_r0.png "realized r0")
+
+With more agents and repeated simulations we are also able to investigate the total number of deaths
+with a little more reliability:
+
+![total deaths](images/many_sims_total_deaths.png "total deaths").
+
+The multiple rusn are produces by executing the same simulation from the above example but with the 
+results saved to files that are then used by ```analysis.py```
+
+### Highly mobile agents
+
+...
 
 ## Issues
-
 
 The current implementation is too slow to run with more than several thousand agents. Because the mortality 
 is around 2% that means that even when 20% of a population of 10000 has had Covid-19, one would only expect

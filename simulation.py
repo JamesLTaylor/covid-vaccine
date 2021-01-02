@@ -2,7 +2,6 @@ import json
 import time
 import numpy as np
 from matplotlib.animation import FuncAnimation
-import analysis
 import constants
 from matplotlib import pyplot as plt
 from numpy.random import uniform, normal
@@ -325,37 +324,36 @@ def update(frame_number, plot=True):
             agent.draw_update(ax)
 
 
-# Initialize
-N = 6000
-t = 0
-delta = 1 / 10
-sdt = np.sqrt(delta)
+if __name__ == "__main__":
+    # Initialize
+    N = 1000
+    t = 0
+    delta = 1 / 10
+    sdt = np.sqrt(delta)
+    days = 50
+    include_plot = True
 
+    for i in range(1):
+        print(f"Simulation number: {i}")
+        patches = {}
+        totals = Totals()
+        r_c = constants.r_c_1000 / np.sqrt(N / 1000)  # r_c is normalized for 1000 agents
+        patch_count = int(1 / r_c) + 1
+        agents, agent_locations, fast_agents = init(N, constants.initial_infection)
 
-for i in range(20):
-    print(f"Simulation number: {i}")
-    patches = {}
-    totals = Totals()
-    r_c = constants.r_c_1000 / np.sqrt(N / 1000)  # r_c is normalized for 1000 agents
-    patch_count = int(1 / r_c) + 1
-    agents, agent_locations, fast_agents = init(N, constants.initial_infection)
+        # Run the Simulation
+        if include_plot:
+            fig, ax = plot(agents)
+            # animation = FuncAnimation(fig, update, interval=200, save_count=days*10)
+            # animation.save('test2.mp4', fps=10, extra_args=['-vcodec', 'libx264'])
+            plt.show()
+        else:
+            start = time.time()
+            for i in range(days*10):
+                update(i, include_plot)
+            print(f"{time.time() - start}")
 
-    # Run the Simulation
-    days = 250
-    include_plot = False
-    if include_plot:
-        fig, ax = plot(agents)
-        animation = FuncAnimation(fig, update, interval=200, save_count=days*10)
-        animation.save('test2.mp4', fps=10, extra_args=['-vcodec', 'libx264'])
-        # plt.show()
-    else:
-        start = time.time()
-        for i in range(days*10):
-            update(i, include_plot)
-        print(f"{time.time() - start}")
+        compact_totals()
+        d = dt.datetime.now()
+        totals.save(f"./data/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
 
-    compact_totals()
-    d = dt.datetime.now()
-    totals.save(f"./data/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
-
-# analysis.plot_progression(days, totals)
