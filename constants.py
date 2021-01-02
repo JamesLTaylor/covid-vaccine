@@ -60,4 +60,7 @@ r_c_1000 = 0.1  # social distance at which person gets infected. Need such that 
 beta_r = 0.04
 beta_o = beta_r / 3  # infection rate from mild symptom agents
 
-total_mortality_multiplier = 2.0  # increase total mortality to be more representative
+total_mortality_multiplier = 2.0  # increase total mortality to be more measurable
+
+fast_fraction = 0.01
+fast_multiplier = 10

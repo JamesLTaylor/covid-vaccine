@@ -68,7 +68,7 @@ class Totals:
 
 
 class Agent:
-    def __init__(self, number: int, x: float, y: float, age: float, social_speed: float):
+    def __init__(self, number: int, x: float, y: float, age: float):
         self.number = number
         self.x = x
         self.y = y
@@ -79,7 +79,7 @@ class Agent:
         self.x0 = x
         self.y0 = y
         self.age = age
-        self.social_speed = social_speed
+        self.is_fast_agent = False
         self.state = constants.susceptible
         self.time_in_state = 0
         self.dot = None
@@ -141,7 +141,10 @@ class Agent:
         :param ax:
         :return:
         """
-        lines = plt.plot(self.x, self.y, 'o', ms=3)
+        if self.is_fast_agent:
+            lines = plt.plot(self.x, self.y, '*', ms=10)
+        else:
+            lines = plt.plot(self.x, self.y, 'o', ms=3)
         self.dot = lines[0]
         self.dot.set_color(self.color())
 
@@ -206,7 +209,7 @@ def init(N, initial_infection):
             y = np.random.uniform()
 
             age = constants.population_age[row, 0]
-            agent = Agent(agent_counter, x, y, age, constants.speed)
+            agent = Agent(agent_counter, x, y, age)
             agents.append(agent)
             agent_locations[agent_counter][0] = x
             agent_locations[agent_counter][1] = y
@@ -221,6 +224,16 @@ def init(N, initial_infection):
         if agent.state is constants.susceptible and agent.x > 0.5 and agent.y > 0.5:
             agent.infect(0)
             infected += 1
+
+    target_fast = int(constants.fast_fraction*N)
+    print(f"Ensuring that the simulation starts with {target_fast} fast agents")
+    while len(fast_agents) < target_fast:
+        if len(fast_agents) > 0:
+            agent_number = int(N * uniform()) # reuse the prior agent number from infected to keep things interesting
+        agent = agents[agent_number]
+        if not agent.is_fast_agent:
+            agent.is_fast_agent = True
+            fast_agents.add(agent)
 
     return agents, agent_locations, fast_agents
 
@@ -285,8 +298,11 @@ def update(frame_number, plot=True):
 
         x = agent.x
         y = agent.y
-        new_x = new_coord(x, constants.speed)
-        new_y = new_coord(y, constants.speed)
+        multiplier = 1.0
+        if agent.is_fast_agent:
+            multiplier = constants.fast_multiplier
+        new_x = new_coord(x, multiplier * constants.speed)
+        new_y = new_coord(y, multiplier * constants.speed)
         agent.set_xy(new_x, new_y)
         if agent.state is constants.exposed or agent.state is constants.infected_mild:
             beta = constants.beta_o
@@ -326,7 +342,7 @@ def update(frame_number, plot=True):
 
 if __name__ == "__main__":
     # Initialize
-    N = 1000
+    N = 2000
     t = 0
     delta = 1 / 10
     sdt = np.sqrt(delta)
@@ -344,9 +360,9 @@ if __name__ == "__main__":
         # Run the Simulation
         if include_plot:
             fig, ax = plot(agents)
-            # animation = FuncAnimation(fig, update, interval=200, save_count=days*10)
-            # animation.save('test2.mp4', fps=10, extra_args=['-vcodec', 'libx264'])
-            plt.show()
+            animation = FuncAnimation(fig, update, interval=200, save_count=days*10)
+            animation.save('simulation_2000agents_250d_v2.mp4', fps=10, extra_args=['-vcodec', 'libx264'])
+            # plt.show()
         else:
             start = time.time()
             for i in range(days*10):
@@ -355,5 +371,5 @@ if __name__ == "__main__":
 
         compact_totals()
         d = dt.datetime.now()
-        totals.save(f"./data/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
+        # totals.save(f"./data/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
 
