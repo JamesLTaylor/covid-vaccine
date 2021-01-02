@@ -1,13 +1,12 @@
+import json
 import time
-from typing import List
-
 import numpy as np
 from matplotlib.animation import FuncAnimation
-import matplotlib
-
+import analysis
 import constants
 from matplotlib import pyplot as plt
 from numpy.random import uniform, normal
+import datetime as dt
 
 
 class Totals:
@@ -20,6 +19,28 @@ class Totals:
         self.infections = []
         self.deaths = []
         self.r0 = []
+        self.daily_infections = []
+        self.daily_r0 = []
+
+    def save(self, filename):
+        str = json.dumps(self.__dict__)
+        with open(filename, 'w') as f:
+            f.write(str)
+
+    def load_from_file(self, filename):
+        with open(filename, 'r') as f:
+            d = json.load(f)
+        self.active = d["active"]
+        self.mild = d["mild"]
+        self.severe = d["severe"]
+        self.dead = d["dead"]
+        self.recovered = d["recovered"]
+        self.infections = d["infections"]
+        self.deaths = d["deaths"]
+        self.r0 = d["r0"]
+        self.daily_infections = d["daily_infections"]
+        self.daily_r0 = d["daily_r0"]
+
 
     def new_infections(self, t, lag):
         temp = np.array(self.infections)
@@ -168,6 +189,10 @@ def plot(agents):
 
 
 def init(N, initial_infection):
+    for i in range(patch_count):
+        for j in range(patch_count):
+            patches[(i, j)] = set()
+
     fast_agents = set()
     agents = []
     agent_locations = np.zeros((N, 2))
@@ -201,6 +226,34 @@ def init(N, initial_infection):
     return agents, agent_locations, fast_agents
 
 
+def compact_totals():
+    """
+    Replace all r0 and infection records with a summary of number per day.
+    :return:
+    """
+    infections = np.array(totals.infections)
+    daily_infections = np.zeros(days)
+    daily_r0 = np.zeros(days)
+    r0_data = {}
+    for agent in agents:
+        if agent.state is constants.dead or agent.state is constants.immune:
+            day = int(agent.time_in_state + constants.t_d)
+            if day not in r0_data:
+                r0_data[day] = [agent.infected]
+            else:
+                r0_data[day].append(agent.infected)
+    for i in range(days):
+        daily_infections[i] = len(np.where((infections >= (i - 1)) & (infections < i))[0])
+        if i in r0_data:
+            daily_r0[i] = np.mean(r0_data[i])
+        else:
+            daily_r0[i] = 0
+    totals.infections = []
+    totals.r0 = []
+    totals.daily_infections = daily_infections.tolist()
+    totals.daily_r0 = daily_r0.tolist()
+
+
 def new_coord(old_coord, speed):
     """
     Find a new x or y value by taking a brownian step and bouncing off the edges
@@ -224,8 +277,9 @@ def update(frame_number, plot=True):
     :param plot:
     :return:
     """
-    t = frame_number * dt
-    print(t)
+    t = frame_number * delta
+    if frame_number % 50 == 0:
+        print(t)
     for agent in agents:
         if agent.state is constants.dead:
             continue
@@ -249,14 +303,14 @@ def update(frame_number, plot=True):
                 continue
             if other_agent.state is not constants.susceptible:
                 continue
-            if uniform() < dt * beta:
+            if uniform() < delta * beta:
                 agent.infected += 1
                 other_agent.infect(t)
             # dx = x - other_agent.x
             # dy = y - other_agent.y
             # dist = np.sqrt(dx * dx + dy * dy)
             # if dist < constants.r_c:
-            #     if uniform() < dt * beta:
+            #     if uniform() < delta * beta:
             #         other_agent.infect(t)
         agent.step(t)
 
@@ -271,86 +325,37 @@ def update(frame_number, plot=True):
             agent.draw_update(ax)
 
 
-N = 2000
+# Initialize
+N = 6000
 t = 0
-dt = 1 / 10
-sdt = np.sqrt(dt)
-
-patches = {}
-totals = Totals()
-r_c = constants.r_c_1000 / np.sqrt(N/1000)  # r_c is normalized for 1000 agents
-patch_count = int(1 / r_c) + 1
-for i in range(patch_count):
-    for j in range(patch_count):
-        patches[(i, j)] = set()
-
-agents, agent_locations, fast_agents = init(N, constants.initial_infection)
-
-days = 250
-include_plot = True
-if include_plot:
-    fig, ax = plot(agents)
-    animation = FuncAnimation(fig, update, interval=200, save_count=days*10)
-    animation.save('test2.mp4', fps=10, extra_args=['-vcodec', 'libx264'])
-    # plt.show()
-else:
-    start = time.time()
-    for i in range(days*10):
-        update(i, include_plot)
-    print(f"{time.time() - start}")
+delta = 1 / 10
+sdt = np.sqrt(delta)
 
 
-infections = np.array(totals.infections)
-x_vals = np.arange(days)
-daily_infections = np.zeros(days)
-daily_r0 = np.zeros(days)
-r0_data = {}
-for agent in agents:
-    if agent.state is constants.dead or agent.state is constants.immune:
-        day = int(agent.time_in_state + constants.t_d)
-        if day not in r0_data:
-            r0_data[day] = [agent.infected]
-        else:
-            r0_data[day].append(agent.infected)
+for i in range(20):
+    print(f"Simulation number: {i}")
+    patches = {}
+    totals = Totals()
+    r_c = constants.r_c_1000 / np.sqrt(N / 1000)  # r_c is normalized for 1000 agents
+    patch_count = int(1 / r_c) + 1
+    agents, agent_locations, fast_agents = init(N, constants.initial_infection)
 
-
-for i in range(days):
-    daily_infections[i] = len(np.where((infections >= (i-1)) & (infections < i))[0])
-    if i in r0_data:
-        daily_r0[i] = np.mean(r0_data[i])
+    # Run the Simulation
+    days = 250
+    include_plot = False
+    if include_plot:
+        fig, ax = plot(agents)
+        animation = FuncAnimation(fig, update, interval=200, save_count=days*10)
+        animation.save('test2.mp4', fps=10, extra_args=['-vcodec', 'libx264'])
+        # plt.show()
     else:
-        daily_r0[i] = 0
+        start = time.time()
+        for i in range(days*10):
+            update(i, include_plot)
+        print(f"{time.time() - start}")
 
-avg_window = 10
-daily_infections_avg = np.convolve(daily_infections, np.ones(avg_window)/avg_window, mode='valid')
+    compact_totals()
+    d = dt.datetime.now()
+    totals.save(f"./data/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
 
-
-plt.figure()
-plt.plot(x_vals[avg_window-1:], daily_infections_avg)
-for death in totals.deaths:
-    day = int(death[0])
-    y = daily_infections_avg[day-avg_window]
-    plt.plot(day, y, 'ok')
-    plt.text(day+2.5, y-0.1, int(death[1]))
-plt.title("Daily new infections. (10day rolling average)")
-plt.xlabel("days")
-plt.ylabel("new infections")
-
-plt.figure()
-plt.plot(x_vals, 100*np.cumsum(daily_infections)/N)
-plt.gca().yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-plt.title("Total infections.")
-plt.xlabel("days")
-plt.ylabel("% of population infected")
-
-
-plt.figure()
-avg_window = 21
-daily_r0_avg = np.convolve(daily_r0, np.ones(avg_window)/avg_window, mode='valid')
-plt.plot(x_vals[avg_window-1:], daily_r0_avg)
-plt.hlines(1, x_vals[avg_window-1], x_vals[-1], 'k',linestyles='dotted')
-plt.title("Realized $R_0$. 21 day rolling average")
-plt.xlabel("days")
-plt.ylabel("average realized $R_0$")
-
-
+# analysis.plot_progression(days, totals)
