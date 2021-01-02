@@ -77,6 +77,8 @@ With similar parameters to above but with 6000 agents and run 60 times we get th
 
 ![daily infections](images/many_sims_daily_infections.png "daily infections")
 
+![daily infections](images/many_sims_total_infections.png "total infections")
+
 ![realized r0](images/many_sims_daily_r0.png "realized r0")
 
 With more agents and repeated simulations we are also able to investigate the total number of deaths
@@ -99,6 +101,14 @@ We now add highly connected individuals
 |Connected speed multilpier|10x|
 
 [![Simulation](images/video_v2_screen_grab.JPG)](http://www.youtube.com/watch?v=3mZx4Y0b6AU)
+
+![daily infections](images/fast_daily_infections.png "daily infections")
+
+![daily infections](images/fast_total_infections.png "total infections")
+
+![realized r0](images/fast_daily_r0.png "realized r0")
+
+![total deaths](images/fast_total_deaths.png "total deaths").
 
 ## Issues
 
