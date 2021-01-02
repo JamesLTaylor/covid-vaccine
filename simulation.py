@@ -20,6 +20,8 @@ class Totals:
         self.r0 = []
         self.daily_infections = []
         self.daily_r0 = []
+        self.vaccinated = 0
+        self.old_vaccinated = 0
 
     def save(self, filename):
         str = json.dumps(self.__dict__)
@@ -195,7 +197,7 @@ def init(N, initial_infection):
         for j in range(patch_count):
             patches[(i, j)] = set()
 
-    fast_agents = set()
+    fast_agents = []
     agents = []
     agent_locations = np.zeros((N, 2))
 
@@ -233,7 +235,7 @@ def init(N, initial_infection):
         agent = agents[agent_number]
         if not agent.is_fast_agent:
             agent.is_fast_agent = True
-            fast_agents.add(agent)
+            fast_agents.append(agent_number)
 
     return agents, agent_locations, fast_agents
 
@@ -281,10 +283,48 @@ def new_coord(old_coord, speed):
     return new
 
 
-def update(frame_number, plot=True):
+def get_next_patient(fast_first, mode):
+    if fast_first and totals.vaccinated < len(fast_agents):
+        patient = fast_agents[totals.vaccinated]
+    elif mode == 'old' or fast_first and totals.vaccinated >= len(fast_agents):
+        patient = N - 1 - totals.old_vaccinated
+        totals.old_vaccinated += 1
+    elif mode == 'random' or fast_first and totals.vaccinated >= len(fast_agents):
+        patient = int(N * uniform())
+    else:
+        raise Exception(f"Unknown mode {fast_first}, {mode}, {t}")
+    if agents[patient].state == constants.vaccinated:
+        print(f"{patient} already done")
+        return get_next_patient(fast_first, mode)
+    else:
+        return patient
+
+
+def vaccinate(t, fast_first, mode):
+    """
+
+    :param t:
+    :param fast_first: Should we vaccinate the fast agents first?
+    :param mode: 'old', 'random'
+    :return:
+    """
+    if t <= constants.vaccine_delay:
+        return
+    target_total = int(t * constants.vaccine_rate * N)
+    while totals.vaccinated < target_total:
+        patient = get_next_patient(fast_first, mode)
+        totals.vaccinated += 1
+        agents[patient].state = constants.vaccinated
+        print(f"{totals.vaccinated} vaccine given to patient {patient}, age = {agents[patient].age}, "
+              f"is fast = {agents[patient].is_fast_agent}")
+
+
+def update(frame_number, plot=False, vaccinate_fast_first=False, vaccination_mode=None):
     """
     Take on time step. Update infections and the progression of the disease in each agent.
     Optionally plot the agents.
+    :param vaccination_mode: None, 'random' or 'old'
+    :param vaccinate_fast_first: Should we vaccinate the fast agents first?
     :param frame_number:
     :param plot:
     :return:
@@ -328,6 +368,8 @@ def update(frame_number, plot=True):
             #     if uniform() < delta * beta:
             #         other_agent.infect(t)
         agent.step(t)
+        if vaccination_mode is not None:
+            vaccinate(t, vaccinate_fast_first, vaccination_mode)
 
     if plot:
         infection_count = len(totals.infections)
@@ -342,15 +384,18 @@ def update(frame_number, plot=True):
 
 if __name__ == "__main__":
     # Initialize
-    N = 6000
+    N = 1000
     t = 0
     delta = 1 / 10
     sdt = np.sqrt(delta)
-    days = 250
+    days = 25
     include_plot = False
+    vaccinate_fast_first = False
+    vaccination_mode = 'random'
 
-    for i in range(20):
-        print(f"Simulation number: {i}")
+    for sim_number in range(60):
+        print(f"Simulation number: {sim_number}")
+        print(f"Vaccination strategy = {vaccination_mode}. Vaccinate fast first = {vaccinate_fast_first}")
         patches = {}
         totals = Totals()
         r_c = constants.r_c_1000 / np.sqrt(N / 1000)  # r_c is normalized for 1000 agents
@@ -366,10 +411,10 @@ if __name__ == "__main__":
         else:
             start = time.time()
             for i in range(days*10):
-                update(i, include_plot)
+                update(i, include_plot, vaccinate_fast_first, vaccination_mode)
             print(f"{time.time() - start}")
 
         compact_totals()
         d = dt.datetime.now()
-        totals.save(f"./data_fast/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
+        # totals.save(f"./data_fast/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
 

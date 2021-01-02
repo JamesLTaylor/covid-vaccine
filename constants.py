@@ -37,12 +37,14 @@ infected_mild = 2
 infected_severe = 3
 dead = 4
 immune = 5
+vaccinated = 6
 states = {susceptible: ["Susceptible", "Gray"],
           exposed: ["Exposed", "fuchsia"],
           infected_mild: ["Infected (mild)", "Orange"],
           infected_severe: ["Infected (severe)", "Red"],
           dead: ["Dead", "Black"],
-          immune: ["Recovered/vaccine", "Green"]}
+          immune: ["Recovered/vaccine", "Green"],
+          vaccinated: ["Vaccinated", "blue"]}
 
 t_d = 14  # disease duration = infection to dead/better
 t_l = 5  # infection to symptom
@@ -64,3 +66,6 @@ total_mortality_multiplier = 2.0  # increase total mortality to be more measurab
 
 fast_fraction = 0.01
 fast_multiplier = 10
+
+vaccine_rate = 0.015
+vaccine_delay = 3
