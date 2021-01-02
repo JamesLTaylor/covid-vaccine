@@ -342,14 +342,14 @@ def update(frame_number, plot=True):
 
 if __name__ == "__main__":
     # Initialize
-    N = 2000
+    N = 6000
     t = 0
     delta = 1 / 10
     sdt = np.sqrt(delta)
-    days = 50
-    include_plot = True
+    days = 250
+    include_plot = False
 
-    for i in range(1):
+    for i in range(20):
         print(f"Simulation number: {i}")
         patches = {}
         totals = Totals()
@@ -371,5 +371,5 @@ if __name__ == "__main__":
 
         compact_totals()
         d = dt.datetime.now()
-        # totals.save(f"./data/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
+        totals.save(f"./data_fast/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
 

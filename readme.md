@@ -87,9 +87,18 @@ with a little more reliability:
 The multiple rusn are produces by executing the same simulation from the above example but with the 
 results saved to files that are then used by ```analysis.py```
 
-### Highly mobile agents
+### Highly connected agents
 
-...
+We now add highly connected individuals
+
+|Parameter|Value|
+|---|---|
+|N|2000|
+|in patch|10|
+|Proportion of Connected|1%|
+|Connected speed multilpier|10x|
+
+[![Simulation](images/video_v2_screen_grab.JPG)](http://www.youtube.com/watch?v=3mZx4Y0b6AU)
 
 ## Issues
 

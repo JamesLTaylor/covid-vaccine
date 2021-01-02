@@ -74,6 +74,7 @@ all_deaths = []
 x_vals = np.arange(days)
 paths = np.zeros((len(filenames), 250-avg_window+1))
 r0_paths = np.zeros((len(filenames), 250-avg_window+1))
+total_paths = np.zeros((len(filenames), 250-avg_window+1))
 for i in range(len(filenames)):
     totals = simulation.Totals()
     totals.load_from_file(os.path.join(path, filenames[i]))
@@ -82,6 +83,12 @@ for i in range(len(filenames)):
 
     daily_r0_avg = np.convolve(totals.daily_r0, np.ones(avg_window) / avg_window, mode='valid')
     r0_paths[i, :] = daily_r0_avg
+
+    total_paths = 100 * np.cumsum(daily_infections_avg) / N
+
+    plt.title("Total infections.")
+    plt.xlabel("days")
+    plt.ylabel("% of population infected")
 
     all_deaths += [row[1] for row in totals.deaths]
 
