@@ -41,7 +41,7 @@ def plot_progression(days, totals, N):
     plt.ylabel("average realized $R_0$")
 
 
-def plot_envelope(paths_to_use, title, ylabel, y_axis_percent):
+def plot_envelope(paths_to_use, title, ylabel, y_axis_percent, x_vals, avg_window):
     plt.figure()
     plt.title(title)
     plt.xlabel("days")
@@ -66,37 +66,73 @@ def plot_envelope(paths_to_use, title, ylabel, y_axis_percent):
         plt.gca().yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
 
 
-days = 250
-N = 6000
-avg_window = 10
-x_vals = np.arange(days)
-path = "./data_fast"
-filenames = list(os.listdir(path))
+def get_all_deaths(path):
+    filenames = list(os.listdir(path))
 
-all_deaths = []
-paths = np.zeros((len(filenames), 250-avg_window+1))
-r0_paths = np.zeros((len(filenames), 250-avg_window+1))
-total_paths = np.zeros((len(filenames), 250-avg_window+1))
-for i in range(len(filenames)):
-    totals = simulation.Totals()
-    totals.load_from_file(os.path.join(path, filenames[i]))
-    daily_infections_avg = np.convolve(totals.daily_infections, np.ones(avg_window) / avg_window, mode='valid')
-    paths[i, :] = daily_infections_avg
+    all_deaths = []
+    for i in range(len(filenames)):
+        totals = simulation.Totals()
+        totals.load_from_file(os.path.join(path, filenames[i]))
+        all_deaths += [row[1] for row in totals.deaths]
+    return all_deaths
 
-    daily_r0_avg = np.convolve(totals.daily_r0, np.ones(avg_window) / avg_window, mode='valid')
-    r0_paths[i, :] = daily_r0_avg
 
-    total_infected = 100 * np.cumsum(daily_infections_avg) / N
-    total_paths[i, :] = total_infected
+def plot_history():
+    days = 250
+    N = 6000
+    avg_window = 10
+    x_vals = np.arange(days)
+    path = "./data_fast"
+    filenames = list(os.listdir(path))
 
-    all_deaths += [row[1] for row in totals.deaths]
+    all_deaths = []
+    paths = np.zeros((len(filenames), 250-avg_window+1))
+    r0_paths = np.zeros((len(filenames), 250-avg_window+1))
+    total_paths = np.zeros((len(filenames), 250-avg_window+1))
+    for i in range(len(filenames)):
+        totals = simulation.Totals()
+        totals.load_from_file(os.path.join(path, filenames[i]))
+        daily_infections_avg = np.convolve(totals.daily_infections, np.ones(avg_window) / avg_window, mode='valid')
+        paths[i, :] = daily_infections_avg
 
-plot_envelope(paths, "Daily new infections. (10day rolling average)", "new infections", False)
-plot_envelope(r0_paths, "Average $R_0$. (10day rolling average)", "Realized $R_0$", False)
-plot_envelope(total_paths, "Total infections.", "% of population infected$", True)
+        daily_r0_avg = np.convolve(totals.daily_r0, np.ones(avg_window) / avg_window, mode='valid')
+        r0_paths[i, :] = daily_r0_avg
+
+        total_infected = 100 * np.cumsum(daily_infections_avg) / N
+        total_paths[i, :] = total_infected
+
+        all_deaths += [row[1] for row in totals.deaths]
+
+    plot_envelope(paths, "Daily new infections. (10day rolling average)", "new infections", False, x_vals, avg_window)
+    plot_envelope(r0_paths, "Average $R_0$. (10day rolling average)", "Realized $R_0$", False, x_vals, avg_window)
+    plot_envelope(total_paths, "Total infections.", "% of population infected$", True, x_vals, avg_window)
+
+    plt.figure()
+    plt.hist(all_deaths, np.arange(0, 100, 5))
+    plt.title("Distribution of simulated covid-19 deaths by age")
+    plt.xlabel("Age (years)")
+    plt.ylabel("Total from all simulations")
+
+
+data1 = get_all_deaths("./data_vaccine_fast")
+data2 = get_all_deaths("./data_vaccine_old")
+data3 = get_all_deaths("./data_vaccine_random")
+
 
 plt.figure()
-plt.hist(all_deaths, np.arange(0, 100, 5))
-plt.title("Distribution of simulated covid-19 deaths by age")
-plt.xlabel("Age (years)")
+plt.hist([data1, data2, data3], np.arange(0, 100, 10))
+plt.title("Impact of vaccine strategy on distribution of simulated covid-19 deaths by age")
+plt.legend(["Highly connected first", "Old first", "Random"])
 plt.ylabel("Total from all simulations")
+plt.gca().set_xticks(np.arange(5, 105, 10))
+labels = [f"{i*10}-{10+i*10}y" for i in range(10)]
+plt.gca().set_xticklabels(labels)
+
+plt.figure()
+plt.title("Impact of vaccine strategy on covid-19 deaths of people aged under and over 50.")
+plt.hist([data1, data2], [0, 50, 100])
+plt.gca().set_xticks([15, 35, 65, 85])
+plt.gca().set_xticklabels(["under 50\nvaccinate highly connected first", "under 50\nvaccinate old first",
+                           "over 50\nvaccinate highly connected first", "over 50\nvaccinate old first",])
+
+

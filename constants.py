@@ -67,5 +67,5 @@ total_mortality_multiplier = 2.0  # increase total mortality to be more measurab
 fast_fraction = 0.01
 fast_multiplier = 10
 
-vaccine_rate = 0.015
-vaccine_delay = 3
+vaccine_rate = 0.0005
+vaccine_delay = 30

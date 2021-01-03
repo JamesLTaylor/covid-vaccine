@@ -310,7 +310,7 @@ def vaccinate(t, fast_first, mode):
     """
     if t <= constants.vaccine_delay:
         return
-    target_total = int(t * constants.vaccine_rate * N)
+    target_total = int((t - constants.vaccine_delay) * constants.vaccine_rate * N)
     while totals.vaccinated < target_total:
         patient = get_next_patient(fast_first, mode)
         totals.vaccinated += 1
@@ -368,8 +368,8 @@ def update(frame_number, plot=False, vaccinate_fast_first=False, vaccination_mod
             #     if uniform() < delta * beta:
             #         other_agent.infect(t)
         agent.step(t)
-        if vaccination_mode is not None:
-            vaccinate(t, vaccinate_fast_first, vaccination_mode)
+    if vaccination_mode is not None:
+        vaccinate(t, vaccinate_fast_first, vaccination_mode)
 
     if plot:
         infection_count = len(totals.infections)
@@ -384,18 +384,20 @@ def update(frame_number, plot=False, vaccinate_fast_first=False, vaccination_mod
 
 if __name__ == "__main__":
     # Initialize
-    N = 1000
+    N = 6000
     t = 0
     delta = 1 / 10
     sdt = np.sqrt(delta)
-    days = 25
+    days = 250
     include_plot = False
-    vaccinate_fast_first = False
-    vaccination_mode = 'random'
+    vaccinate_fast_first = True
+    vaccination_mode = 'old'
+    folder = "data_vaccine_fast"
 
     for sim_number in range(60):
         print(f"Simulation number: {sim_number}")
         print(f"Vaccination strategy = {vaccination_mode}. Vaccinate fast first = {vaccinate_fast_first}")
+        print(f"Location {folder}")
         patches = {}
         totals = Totals()
         r_c = constants.r_c_1000 / np.sqrt(N / 1000)  # r_c is normalized for 1000 agents
@@ -416,5 +418,5 @@ if __name__ == "__main__":
 
         compact_totals()
         d = dt.datetime.now()
-        # totals.save(f"./data_fast/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
+        totals.save(f"./{folder}/{N}_{days}_{d.month}_{d.day}_{d.hour}_{d.minute}_{d.second}.json")
 

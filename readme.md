@@ -95,7 +95,7 @@ We now add highly connected individuals
 
 |Parameter|Value|
 |---|---|
-|N|2000|
+|N|6000|
 |in patch|10|
 |Proportion of Connected|1%|
 |Connected speed multilpier|10x|
@@ -110,13 +110,32 @@ We now add highly connected individuals
 
 ![total deaths](images/fast_total_deaths.png "total deaths").
 
+## Comparing Vaccination Strategies
+
+We try 3 strategies
+1: Vaccine is randomly allocated.
+2: Vaccine is given to oldest first.
+3: Vaccine is given to randomly to the highly connected individuals and then to the oldest people.
+
+Running 60 simulations with the same initial conditions as in the 'Highly connected agents' section we 
+get the following results:
+
+![compare_vaccine_strategy1](images/compare_vaccine_strategy1.png "compare_vaccine_strategy1")
+
+![compare_vaccine_strategy2](images/compare_vaccine_strategy2.png "compare_vaccine_strategy2")
+
+Where we see that targeted vaccination does much better than random vaccinations. However with respect to total 
+deaths the two target strategies perform almost identically. Focusing on highly connected people appears to 
+save more lives for people under 50 but at the expense of losing more lives in people over 50.
+
+### Vaccine rate
+The vaccine rate has been set to 0.05% per day. That would correspond to 30000 vaccinations a day in 
+South Africa.
+
 ## Issues
 
-The current implementation is too slow to run with more than several thousand agents. Because the mortality 
-is around 2% that means that even when 20% of a population of 10000 has had Covid-19, one would only expect
-40 deaths. There is a lot of numerical noise in such a small number so it will be hard to measure the impact
-of the vaccination strategies.
-  
+The initial conditions and transmission rates have not been finely tuned to the South African disease 
+statistics.  
 
 ## Data
 
@@ -129,15 +148,6 @@ The mortality rates are based on the age of the agent and the severity of the in
 ### Age distribution in population
 
 [Wikipedia: Demographics_of_South_Africa - Age and sex distribution](https://en.wikipedia.org/wiki/Demographics_of_South_Africa#Age_and_sex_distribution).
-
-
-## TODO:
-
- * Speed up the simulation
- * Run ensembles of simulations and see how many need to run before we get stable disease dynamics where the 
- strategies can be tested.
- * Add the "fast moving agents" who simulate highly connected people
- * Add the vaccination policies.
 
 
 ## References
